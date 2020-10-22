@@ -1,19 +1,39 @@
 import Vue from "vue";
 import Vuex from "vuex";
+import { AdminWebsocket } from "@holochain/conductor-api";
 
 Vue.use(Vuex);
+const ADMIN_PORT = 3301;
+(function() {
+  if ("File" in self) {
+    File.prototype.arrayBuffer = File.prototype.arrayBuffer || myArrayBuffer;
+  }
+  Blob.prototype.arrayBuffer = Blob.prototype.arrayBuffer || myArrayBuffer;
 
+  function myArrayBuffer() {
+    // this: File or Blob
+    return new Promise(resolve => {
+      let fr = new FileReader();
+      fr.onload = () => {
+        resolve(fr.result);
+      };
+      fr.readAsArrayBuffer(this);
+    });
+  }
+})();
 export default {
   namespaced: true,
   state: {
     conductor: {
       uuid: "2deb6610-911c-4cfc-b3c4-d89af573fa58",
-      name: "Phil's Holochain Conductor"
+      name: "Phil's Holochain Conductor",
+      folder: "/Users/philipbeadle/holochain-2020/conductor-admin/conductor/applicationDnas/"
     },
     agents: {},
     applications: {},
+    agentApplications: {},
     agent: {
-      agentPubKey: {},
+      agentKey: {},
       handle: "",
       avatar: ""
     },
@@ -32,6 +52,12 @@ export default {
         .equals(conductor.uuid)
         .toArray(agents => {
           commit("setAgents", agents);
+          console.log(agents[0].agentKey);
+          let fr = new FileReader();
+          fr.onload = () => {
+            console.log(fr.result);
+          };
+          fr.readAsBinaryString(agents[0].agentKey);
         });
       //  fetch from holochain in parallel to dexie
       //  .then(projects => {
@@ -40,8 +66,13 @@ export default {
       //    });
       //  });
     },
-    saveAgent({ rootState, commit }, payload) {
+    async saveAgent({ rootState, commit }, payload) {
       const agent = { ...payload.agent, parent: payload.conductor.uuid };
+      if (payload.action === "create") {
+        const adminSocket = await AdminWebsocket.connect(`ws://localhost:${ADMIN_PORT}`);
+        agent.agentKey = await adminSocket.generateAgentPubKey();
+        console.log(agent.agentKey);
+      }
       rootState.db.agents.put(agent).then(() => {
         if (payload.action === "create") {
           commit("createAgent", agent);
@@ -49,13 +80,7 @@ export default {
           commit("updateAgent", agent);
         }
       });
-      // send to Holochain
-      // .then(project => {
-      // rootState.db.projects
-      // .put(project)
-      // .then(() => {
-      //     commit("updateProject", project);
-      //   }
+      // save agent details in Holochain
     },
     deleteAgent({ rootState, commit }, payload) {
       const agent = { ...payload };
@@ -122,6 +147,48 @@ export default {
       // .then(() => {
       //     commit("updateProject", project);
       //   }
+    },
+    deleteApplication({ rootState, commit }, payload) {
+      const application = { ...payload };
+      rootState.db.applications.delete(application.uuid).then(() => {
+        commit("deleteApplication", application);
+      });
+      // delete from Holochain
+    },
+    fetchAgentApplications({ rootState, commit }, payload) {
+      const agent = { ...payload };
+      rootState.db.agentApplications
+        .where("agent")
+        .equals(agent.uuid)
+        .toArray(agentApplications => {
+          commit("setAgentApplications", agentApplications);
+        });
+      //  fetch from holochain in parallel to dexie
+      //  .then(projects => {
+      //    rootState.db.projects.bulkPut(projects).then(() => {
+      //      commit("setProjects", projects);
+      //    });
+      //  });
+    },
+    installAgentApplication({ rootState, commit }, payload) {
+      const agentApplication = {
+        ...payload.application,
+        agent: payload.agent.uuid
+      };
+      rootState.db.agentApplications.put(agentApplication).then(() => {
+        if (payload.action === "create") {
+          commit("createAgentApplication", agentApplication);
+        } else {
+          commit("updateAgentApplication", agentApplication);
+        }
+      });
+      // send to Holochain
+      // .then(project => {
+      // rootState.db.projects
+      // .put(project)
+      // .then(() => {
+      //     commit("updateProject", project);
+      //   }
     }
   },
   mutations: {
@@ -157,7 +224,10 @@ export default {
       state.applications = state.applications.filter(
         a => a.uuid !== payload.uuid
       );
-    }
+    },
+    setAgentApplications(state, payload) {
+      state.agentApplications = payload;
+    },
   },
   modules: {}
 };

@@ -9,7 +9,7 @@
         <img :src="require('@/assets/icons/GRADIENT_HALO.png')" />
       </v-avatar>
       <v-toolbar-title class="title ml-2">
-        {{ conductor.name }} - Agents</v-toolbar-title
+        Agent Applications</v-toolbar-title
       >
       <v-spacer></v-spacer>
       <v-tooltip bottom>
@@ -19,42 +19,42 @@
             icon
             v-bind="attrs"
             v-on="on"
-            @click="agentDetailsOpen = true"
+            @click="agentApplicationDetailsOpen = true"
             small
           >
             <v-icon>mdi-plus-box-outline</v-icon>
           </v-btn>
         </template>
-        <span>Add an Agent</span>
+        <span>Install an Application for this Agent</span>
       </v-tooltip>
     </v-app-bar>
     <v-row no-gutters height="100%">
       <v-col
-        v-for="agent in agents"
-        :key="agent.uuid"
+        v-for="application in agentApplications"
+        :key="application.uuid"
         cols="12"
-        sm="4"
-        md="3"
-        lg="2"
+        sm="6"
+        md="4"
+        lg="3"
       >
-        <agent
-          :key="agent.uuid"
-          :agent="agent"
+        <agent-application
+          :key="application.uuid"
+          :application="application"
           :details="details"
-          @open-agent-detail="openAgentDetail"
-          @delete-agent="showDeleteDialog"
+          @open-application-detail="openAgentApplicationDetail"
+          @delete-application="showDeleteDialog"
         >
-        </agent>
+        </agent-application>
       </v-col>
     </v-row>
     <confirm-action-dialog
       :isOpen="deleteDialog"
-      :message="`delete ${this.actionAgent.handle}`"
+      :message="`delete ${this.actionAgentApplication.name}`"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
     />
     <v-navigation-drawer
-      v-model="agentDetailsOpen"
+      v-model="agentApplicationDetailsOpen"
       fixed
       dark
       class="black overflow-visible pa-0"
@@ -63,8 +63,8 @@
     >
       <v-card height="100%" width="100%" tile class="pa-0 ma-0">
         <v-system-bar window dark>
-          <v-icon>mdi-face-agent</v-icon>
-          <span>Agent Details</span>
+          <v-icon>mdi-application</v-icon>
+          <span>Agent Application Details</span>
           <v-spacer></v-spacer>
           <v-icon v-if="!isEditing" @click="isEditing = true"
             >mdi-square-edit-outline</v-icon
@@ -78,7 +78,7 @@
             <v-form>
               <v-toolbar dark dense outlined rounded>
                 <v-toolbar-title v-if="!isEditing">
-                  {{ actionAgent.handle }}
+                  {{ actionAgentApplication.name }}
                 </v-toolbar-title>
                 <v-toolbar-title v-if="isEditing">
                   <v-text-field
@@ -86,8 +86,8 @@
                     dark
                     outlined
                     class="title mt-6 pt-0 pl-n2"
-                    v-model="actionAgent.handle"
-                    label="Handle, eg @philt3r"
+                    v-model="actionAgentApplication.name"
+                    label="Name"
                   />
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
@@ -96,13 +96,13 @@
                 v-if="!isEditing"
                 height="300"
                 contain
-                :src="actionAgent.avatar"
+                :src="actionAgentApplication.preview"
               >
               </v-img>
               <v-image-input
-                :key="actionAgent.uuid"
+                :key="actionAgentApplication.uuid"
                 v-if="isEditing"
-                v-model="actionAgent.avatar"
+                v-model="actionAgentApplication.preview"
                 :image-quality="1"
                 clearable
                 image-format="jpeg,png"
@@ -112,6 +112,7 @@
                 image-min-scaling="contain"
                 class="ml-15 pl-10 mt-5 mb-n3"
               />
+              <v-btn @click="uploadDnaFiles">Select DNAs</v-btn>
             </v-form>
           </v-col>
         </v-row>
@@ -123,10 +124,15 @@
 import { v4 as uuidv4 } from "uuid";
 import { mapState, mapActions } from "vuex";
 import VImageInput from "vuetify-image-input/a-la-carte";
+import * as electron from "electron";
+import * as fs from "fs";
+import * as path from "path";
+
+const dialog = electron.remote.dialog;
 export default {
-  name: "Agents",
+  name: "AgentAgentApplications",
   components: {
-    Agent: () => import("../components/Agent.vue"),
+    AgentApplication: () => import("../components/AgentApplication.vue"),
     VImageInput,
     ConfirmActionDialog: () =>
       import("@/components/core/ConfirmActionDialog.vue")
@@ -135,65 +141,97 @@ export default {
     return {
       details: false,
       isEditing: true,
-      agentDetailsOpen: false,
-      actionAgent: {
+      agentApplicationDetailsOpen: false,
+      actionAgentApplication: {
         uuid: uuidv4(),
-        agentPubKey: {},
-        handle: "",
-        avatar: ""
+        name: "",
+        preview: "",
+        description: "",
+        dnas: []
       },
       action: "create",
       deleteDialog: false
     };
   },
   methods: {
-    ...mapActions("conductor", ["fetchAgents", "saveAgent", "deleteAgent"]),
-    openAgentDetail(agent) {
+    ...mapActions("conductor", [
+      "fetchAgentApplications",
+      "saveAgentApplication",
+      "deleteAgentApplication"
+    ]),
+    openAgentApplicationDetail(application) {
       this.isEditing = false;
       this.action = "update";
-      this.actionAgent = { ...agent };
-      this.agentDetailsOpen = true;
+      this.actionAgentApplication = { ...application };
+      this.applicationDetailsOpen = true;
     },
     save() {
-      this.saveAgent({
+      this.saveAgentApplication({
         action: this.action,
         conductor: this.conductor,
-        agent: this.actionAgent
+        application: this.actionAgentApplication
       }).then(() => this.reset());
     },
     cancel() {
       this.reset();
     },
     reset() {
-      this.actionAgent = {
+      this.actionAgentApplication = {
         uuid: uuidv4(),
-        agentPubKey: {},
-        handle: "",
-        avatar: ""
+        name: "",
+        preview: "",
+        description: "",
+        dnas: []
       };
-      this.agentDetailsOpen = false;
+      this.applicationDetailsOpen = false;
       this.isEditing = true;
     },
-    peopleSelected(people) {
-      this.actionAgent.people = people;
-    },
-    showDeleteDialog(agent) {
-      this.actionAgent = agent;
+    showDeleteDialog(application) {
+      this.actionAgentApplication = application;
       this.deleteDialog = true;
     },
     confirmDelete() {
-      this.deleteAgent(this.actionAgent).then(() => this.reset());
+      this.deleteAgentApplication(this.actionAgentApplication).then(() => this.reset());
       this.deleteDialog = false;
     },
     cancelDelete() {
       this.deleteDialog = false;
+    },
+    uploadDnaFiles() {
+      dialog
+        .showOpenDialog({
+          title: "Select each of the DNAs for this AgentApplication",
+          defaultPath: "/",
+          buttonLabel: "Upload",
+          filters: [
+            {
+              name: "DNA File",
+              extensions: ["dna.gz"]
+            }
+          ],
+          properties: ["openFile", "multiSelections"]
+        })
+        .then(selected => {
+          if (!selected.canceled) {
+            selected.filePaths.forEach(file => {
+              const dest = path.join(this.conductor.folder, path.basename(file));
+              this.actionAgentApplication.dnas.push(dest);
+              fs.copyFileSync(file, dest, { overwrite: true });
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
     }
   },
   computed: {
-    ...mapState("conductor", ["conductor", "agents"])
+    ...mapState("conductor", ["conductor", "agentApplications"])
   },
-  mounted() {
-    this.fetchAgents(this.conductor);
+  created() {
+    this.fetchAgentApplications(this.$route.params.uuid).finally(
+      () => (this.loading = false)
+    );
   }
 };
 </script>

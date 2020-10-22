@@ -11,13 +11,13 @@
     width="180"
   >
     <v-list dense color="transparent">
-      <v-list-item to="/agents" color="grey" exact>
+      <v-list-item to="/" color="grey" exact>
         <v-list-item-avatar size="30" class="ml-1 mr-5">
           <img src="@/assets/icons/GRADIENT_HALO.png" />
         </v-list-item-avatar>
         <v-list-item-content>
           <v-list-item-title>
-            Agents
+            Conductor
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -61,6 +61,11 @@ export default {
   computed: {
     items() {
       return [
+         {
+          icon: "mdi-face-agent",
+          text: "Agents",
+          to: "/agents"
+        },
         {
           icon: "mdi-apps",
           text: "Library",

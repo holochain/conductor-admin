@@ -19,6 +19,11 @@ const routes = [
     path: "/applications",
     name: "Applications",
     component: () => import("@/apps/conductorAdmin/views/Applications.vue")
+  },
+  {
+    path: "/agent-applications/:uuid",
+    name: "Agent Applications",
+    component: () => import("@/apps/conductorAdmin/views/AgentApplications.vue")
   }
 ];
 

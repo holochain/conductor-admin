@@ -11,7 +11,8 @@ export default new Vuex.Store({
     initialiseDexie({ state }) {
       state.db.version(1).stores({
         agents: "uuid,name,parent",
-        applications: "uuid,name,parent"
+        applications: "uuid,name,parent",
+        agentApplications: "uuid,name,agent"
       });
     }
   },

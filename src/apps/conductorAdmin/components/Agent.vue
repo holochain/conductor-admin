@@ -12,7 +12,7 @@
     </v-img>
     <v-card-actions class="pa-0 pt-2">
       <v-toolbar dense dark outlined rounded elevation="5" class="pl-2">
-        <v-btn icon small :to="`/agent-apps/${agent.uuid}`">
+        <v-btn icon small :to="`/agent-applications/${agent.uuid}`">
           <v-icon>mdi-apps</v-icon>
         </v-btn>
         <slot> </slot>

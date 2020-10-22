@@ -33,9 +33,9 @@
         v-for="application in applications"
         :key="application.uuid"
         cols="12"
-        sm="6"
-        md="4"
-        lg="3"
+        sm="4"
+        md="3"
+        lg="2"
       >
         <application
           :key="application.uuid"
@@ -112,6 +112,7 @@
                 image-min-scaling="contain"
                 class="ml-15 pl-10 mt-5 mb-n3"
               />
+              <v-btn @click="uploadDnaFiles">Select DNAs</v-btn>
             </v-form>
           </v-col>
         </v-row>
@@ -123,6 +124,11 @@
 import { v4 as uuidv4 } from "uuid";
 import { mapState, mapActions } from "vuex";
 import VImageInput from "vuetify-image-input/a-la-carte";
+import * as electron from "electron";
+import * as fs from "fs";
+import * as path from "path";
+
+const dialog = electron.remote.dialog;
 export default {
   name: "Applications",
   components: {
@@ -190,6 +196,33 @@ export default {
     },
     cancelDelete() {
       this.deleteDialog = false;
+    },
+    uploadDnaFiles() {
+      dialog
+        .showOpenDialog({
+          title: "Select each of the DNAs for this Application",
+          defaultPath: "/",
+          buttonLabel: "Upload",
+          filters: [
+            {
+              name: "DNA File",
+              extensions: ["dna.gz"]
+            }
+          ],
+          properties: ["openFile", "multiSelections"]
+        })
+        .then(selected => {
+          if (!selected.canceled) {
+            selected.filePaths.forEach(file => {
+              const dest = path.join(this.conductor.folder, path.basename(file));
+              this.actionApplication.dnas.push(dest);
+              fs.copyFileSync(file, dest, { overwrite: true });
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
     }
   },
   computed: {

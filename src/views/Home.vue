@@ -13,6 +13,7 @@
       >
       <v-spacer></v-spacer>
     </v-app-bar>
+    <v-card-title>Show "stats & debug info" for this conductor</v-card-title>
   </v-card>
 </template>
 <script>
