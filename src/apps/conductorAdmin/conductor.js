@@ -52,12 +52,6 @@ export default {
         .equals(conductor.uuid)
         .toArray(agents => {
           commit("setAgents", agents);
-          console.log(agents[0].agentKey);
-          let fr = new FileReader();
-          fr.onload = () => {
-            console.log(fr.result);
-          };
-          fr.readAsBinaryString(agents[0].agentKey);
         });
       //  fetch from holochain in parallel to dexie
       //  .then(projects => {
@@ -89,29 +83,18 @@ export default {
       });
       // delete from Holochain
     },
-    setProject({ rootState, commit }, payload) {
-      rootState.db.projects.get(payload).then(project => {
-        rootState.db.kanbanColumns
-          .where("parent")
-          .equals(project.uuid)
-          .toArray(columns => {
-            project.kanbanColumns = columns.sort(function(a, b) {
-              return a.order - b.order;
-            });
-            commit("setProject", project);
-            columns.forEach(column => {
-              rootState.db.kanbanCards
-                .where("parent")
-                .equals(column.uuid)
-                .toArray(cards => {
-                  column.kanbanCards = cards.sort(function(a, b) {
-                    return a.order - b.order;
-                  });
-                  commit("setProject", project);
-                });
-            });
+    setAgent({ rootState, commit }, payload) {
+      rootState.db.agents.get(payload).then(agent => {
+        rootState.db.agentApplications
+          .where("agent")
+          .equals(agent.uuid)
+          .toArray(applications => {
+            agent.agentApplications = applications;
+            commit("setAgentApplications", applications);
+            commit("setAgent", agent);
           });
-      });
+      })
+      .catch(err => console.log(err));
     },
     fetchApplications({ rootState, commit }, payload) {
       const conductor = { ...payload };
@@ -155,32 +138,14 @@ export default {
       });
       // delete from Holochain
     },
-    fetchAgentApplications({ rootState, commit }, payload) {
-      const agent = { ...payload };
-      rootState.db.agentApplications
-        .where("agent")
-        .equals(agent.uuid)
-        .toArray(agentApplications => {
-          commit("setAgentApplications", agentApplications);
-        });
-      //  fetch from holochain in parallel to dexie
-      //  .then(projects => {
-      //    rootState.db.projects.bulkPut(projects).then(() => {
-      //      commit("setProjects", projects);
-      //    });
-      //  });
-    },
     installAgentApplication({ rootState, commit }, payload) {
       const agentApplication = {
         ...payload.application,
+        uuid: payload.uuid,
         agent: payload.agent.uuid
       };
       rootState.db.agentApplications.put(agentApplication).then(() => {
-        if (payload.action === "create") {
-          commit("createAgentApplication", agentApplication);
-        } else {
-          commit("updateAgentApplication", agentApplication);
-        }
+        commit("createAgentApplication", agentApplication);
       });
       // send to Holochain
       // .then(project => {
@@ -227,6 +192,9 @@ export default {
     },
     setAgentApplications(state, payload) {
       state.agentApplications = payload;
+    },
+    createAgentApplication(state, payload) {
+      state.agentApplications.push(payload);
     },
   },
   modules: {}

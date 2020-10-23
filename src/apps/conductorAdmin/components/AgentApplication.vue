@@ -19,34 +19,28 @@
               small
               v-bind="attrs"
               v-on="on"
-              :to="`/app-agents/${application.uuid}`"
+              @click="$emit('install-application', agent, application)"
             >
-              <v-icon>mdi-face-agent</v-icon>
+              <v-icon>mdi-server-plus</v-icon>
             </v-btn>
           </template>
-          <span>See which Agents have this Application</span>
+          <span>Install this Application for {{agent.handle}}</span>
         </v-tooltip>
         <slot> </slot>
-        <v-spacer></v-spacer>
-        <v-icon
-          @click="$emit('delete-application', application)"
-          color="warning"
-        >
-          mdi-delete-outline</v-icon
-        >
-        <v-icon @click="openApplicationDetail">
-          mdi-details
-        </v-icon>
+        <v-spacer></v-spacer> 
       </v-toolbar>
     </v-card-actions>
   </v-card>
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   name: "Application",
   props: ["application", "details"],
-  computed: {},
+  computed: {
+    ...mapState("conductor", ["agent"])
+  },
   methods: {
     openApplicationDetail() {
       this.$emit("open-application-detail", this.application);

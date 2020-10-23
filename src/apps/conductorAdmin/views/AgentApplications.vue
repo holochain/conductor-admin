@@ -8,228 +8,117 @@
       <v-avatar size="30">
         <img :src="require('@/assets/icons/GRADIENT_HALO.png')" />
       </v-avatar>
-      <v-toolbar-title class="title ml-2">
-        Agent Applications</v-toolbar-title
+      <v-toolbar-title v-if="!loading" class="title ml-2">
+        {{ agent.handle }} Available Applications</v-toolbar-title
       >
       <v-spacer></v-spacer>
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            color="action"
-            icon
-            v-bind="attrs"
-            v-on="on"
-            @click="agentApplicationDetailsOpen = true"
-            small
-          >
-            <v-icon>mdi-plus-box-outline</v-icon>
-          </v-btn>
-        </template>
-        <span>Install an Application for this Agent</span>
-      </v-tooltip>
     </v-app-bar>
+    <v-card-title>Installed Applications for xx on this Conductor</v-card-title>
     <v-row no-gutters height="100%">
       <v-col
-        v-for="application in agentApplications"
+        v-for="application in applications"
         :key="application.uuid"
         cols="12"
-        sm="6"
-        md="4"
-        lg="3"
+        xs="6"
+        sm="3"
+        md="2"
+        lg="2"
       >
         <agent-application
           :key="application.uuid"
           :application="application"
           :details="details"
-          @open-application-detail="openAgentApplicationDetail"
-          @delete-application="showDeleteDialog"
+        >
+        </agent-application>
+      </v-col>
+    </v-row>
+    <v-card-title>Available Applications for xx on this Conductor</v-card-title>
+    <v-row no-gutters height="100%">
+      <v-col
+        v-for="application in applications"
+        :key="application.uuid"
+        cols="12"
+        xs="6"
+        sm="3"
+        md="2"
+        lg="2"
+      >
+        <agent-application
+          :key="application.uuid"
+          :application="application"
+          :details="details"
+          @install-application="showInstallDialog"
         >
         </agent-application>
       </v-col>
     </v-row>
     <confirm-action-dialog
-      :isOpen="deleteDialog"
-      :message="`delete ${this.actionAgentApplication.name}`"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
+      v-if="!loading"
+      :isOpen="installDialog"
+      :message="`install ${this.actionAgentApplication.application.name}`"
+      @confirm="confirmInstall"
+      @cancel="cancelInstall"
     />
-    <v-navigation-drawer
-      v-model="agentApplicationDetailsOpen"
-      fixed
-      dark
-      class="black overflow-visible pa-0"
-      right
-      width="500"
-    >
-      <v-card height="100%" width="100%" tile class="pa-0 ma-0">
-        <v-system-bar window dark>
-          <v-icon>mdi-application</v-icon>
-          <span>Agent Application Details</span>
-          <v-spacer></v-spacer>
-          <v-icon v-if="!isEditing" @click="isEditing = true"
-            >mdi-square-edit-outline</v-icon
-          >
-          <v-icon v-if="isEditing" @click="cancel">mdi-cancel</v-icon>
-          <v-icon v-if="isEditing" @click="save">mdi-content-save</v-icon>
-          <v-icon @click="cancel">mdi-close-box-outline</v-icon>
-        </v-system-bar>
-        <v-row no-gutters justify="center">
-          <v-col>
-            <v-form>
-              <v-toolbar dark dense outlined rounded>
-                <v-toolbar-title v-if="!isEditing">
-                  {{ actionAgentApplication.name }}
-                </v-toolbar-title>
-                <v-toolbar-title v-if="isEditing">
-                  <v-text-field
-                    dense
-                    dark
-                    outlined
-                    class="title mt-6 pt-0 pl-n2"
-                    v-model="actionAgentApplication.name"
-                    label="Name"
-                  />
-                </v-toolbar-title>
-                <v-spacer></v-spacer>
-              </v-toolbar>
-              <v-img
-                v-if="!isEditing"
-                height="300"
-                contain
-                :src="actionAgentApplication.preview"
-              >
-              </v-img>
-              <v-image-input
-                :key="actionAgentApplication.uuid"
-                v-if="isEditing"
-                v-model="actionAgentApplication.preview"
-                :image-quality="1"
-                clearable
-                image-format="jpeg,png"
-                :image-width="200"
-                :image-height="200"
-                dark
-                image-min-scaling="contain"
-                class="ml-15 pl-10 mt-5 mb-n3"
-              />
-              <v-btn @click="uploadDnaFiles">Select DNAs</v-btn>
-            </v-form>
-          </v-col>
-        </v-row>
-      </v-card>
-    </v-navigation-drawer>
   </v-card>
 </template>
 <script>
 import { v4 as uuidv4 } from "uuid";
 import { mapState, mapActions } from "vuex";
-import VImageInput from "vuetify-image-input/a-la-carte";
-import * as electron from "electron";
-import * as fs from "fs";
-import * as path from "path";
-
-const dialog = electron.remote.dialog;
 export default {
-  name: "AgentAgentApplications",
+  name: "Applications",
   components: {
     AgentApplication: () => import("../components/AgentApplication.vue"),
-    VImageInput,
     ConfirmActionDialog: () =>
       import("@/components/core/ConfirmActionDialog.vue")
   },
   data() {
     return {
       details: false,
-      isEditing: true,
-      agentApplicationDetailsOpen: false,
-      actionAgentApplication: {
+      loading: true,
+      applicationDetailsOpen: false,
+      actionAgentApplication: { 
         uuid: uuidv4(),
-        name: "",
-        preview: "",
-        description: "",
-        dnas: []
+        agent: {
+          agentKey: {},
+          handle: "",
+          avatar: ""
+        }, 
+        application: {
+          name: "",
+          preview: "",
+          description: "",
+          dnas: []
+        }
       },
       action: "create",
-      deleteDialog: false
+      installDialog: false
     };
   },
   methods: {
     ...mapActions("conductor", [
-      "fetchAgentApplications",
-      "saveAgentApplication",
-      "deleteAgentApplication"
+      "fetchApplications",
+      "setAgent",
+      "installAgentApplication"
     ]),
-    openAgentApplicationDetail(application) {
-      this.isEditing = false;
-      this.action = "update";
-      this.actionAgentApplication = { ...application };
-      this.applicationDetailsOpen = true;
+    showInstallDialog(agent, application) {
+      this.actionAgentApplication = { uuid: uuidv4(), agent, application };
+      this.installDialog = true;
     },
-    save() {
-      this.saveAgentApplication({
-        action: this.action,
-        conductor: this.conductor,
-        application: this.actionAgentApplication
-      }).then(() => this.reset());
+    confirmInstall() {
+      this.installAgentApplication(this.actionAgentApplication);
+      this.installDialog = false;
     },
-    cancel() {
-      this.reset();
-    },
-    reset() {
-      this.actionAgentApplication = {
-        uuid: uuidv4(),
-        name: "",
-        preview: "",
-        description: "",
-        dnas: []
-      };
-      this.applicationDetailsOpen = false;
-      this.isEditing = true;
-    },
-    showDeleteDialog(application) {
-      this.actionAgentApplication = application;
-      this.deleteDialog = true;
-    },
-    confirmDelete() {
-      this.deleteAgentApplication(this.actionAgentApplication).then(() => this.reset());
-      this.deleteDialog = false;
-    },
-    cancelDelete() {
-      this.deleteDialog = false;
-    },
-    uploadDnaFiles() {
-      dialog
-        .showOpenDialog({
-          title: "Select each of the DNAs for this AgentApplication",
-          defaultPath: "/",
-          buttonLabel: "Upload",
-          filters: [
-            {
-              name: "DNA File",
-              extensions: ["dna.gz"]
-            }
-          ],
-          properties: ["openFile", "multiSelections"]
-        })
-        .then(selected => {
-          if (!selected.canceled) {
-            selected.filePaths.forEach(file => {
-              const dest = path.join(this.conductor.folder, path.basename(file));
-              this.actionAgentApplication.dnas.push(dest);
-              fs.copyFileSync(file, dest, { overwrite: true });
-            });
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        });
+    cancelInstall() {
+      this.installDialog = false;
     }
   },
   computed: {
-    ...mapState("conductor", ["conductor", "agentApplications"])
+    ...mapState("conductor", ["conductor", "agent", "application", "applications"])
   },
-  created() {
-    this.fetchAgentApplications(this.$route.params.uuid).finally(
+  mounted() {
+    this.fetchApplications(this.conductor);
+    this.setAgent(this.$route.params.uuid)
+    .finally(
       () => (this.loading = false)
     );
   }
