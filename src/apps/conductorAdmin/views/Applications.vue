@@ -113,6 +113,7 @@
                 class="ml-15 pl-10 mt-5 mb-n3"
               />
               <v-btn @click="uploadDnaFiles">Select DNAs</v-btn>
+              <input type="file" @change="uploadFile" multiple>
             </v-form>
           </v-col>
         </v-row>
@@ -129,6 +130,8 @@ import * as fs from "fs";
 import * as path from "path";
 
 const dialog = electron.remote.dialog;
+import axios from "axios";
+
 export default {
   name: "Applications",
   components: {
@@ -149,6 +152,7 @@ export default {
         description: "",
         dnas: []
       },
+      dnas: [],
       action: "create",
       deleteDialog: false
     };
@@ -196,6 +200,15 @@ export default {
     },
     cancelDelete() {
       this.deleteDialog = false;
+    },
+    uploadFile (event) {
+      this.actionApplication.dnas.push(event.target.files);
+      const formData = new FormData();
+      for (let i of Object.keys(event.target.files)) {
+        formData.append('files', event.target.files[i])
+      }
+      axios.post("http://localhost:7401/uploadDnas", formData, {})
+      .then(response => console.log(response.data));
     },
     uploadDnaFiles() {
       dialog
