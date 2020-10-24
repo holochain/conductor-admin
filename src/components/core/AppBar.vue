@@ -1,5 +1,7 @@
 <template>
-  <v-app-bar app color="transparent" dense clipped-left> </v-app-bar>
+  <v-app-bar app color="transparent" dense clipped-left
+    ><slot></slot>
+  </v-app-bar>
 </template>
 
 <script>

@@ -24,6 +24,11 @@ const routes = [
     path: "/agent-applications/:uuid",
     name: "Agent Applications",
     component: () => import("@/apps/conductorAdmin/views/AgentApplications.vue")
+  },
+  {
+    path: "/file-editor",
+    name: "File Editor",
+    component: () => import("@/apps/fileEditor/views/FileEditor.vue")
   }
 ];
 

@@ -62,13 +62,13 @@ export default {
     items() {
       return [
         {
-          icon: "mdi-face-agent",
-          text: "Agents",
-          to: "/agents"
+          icon: "mdi-file-tree-outline",
+          text: "File Editor",
+          to: "/file-editor"
         },
         {
           icon: "mdi-apps",
-          text: "Library",
+          text: "App Store",
           to: "/applications"
         }
       ];

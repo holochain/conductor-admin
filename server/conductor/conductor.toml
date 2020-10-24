@@ -6,4 +6,4 @@ type = "cmd"
 [[admin_interfaces]]
 [admin_interfaces.driver]
 type = "websocket"
-port = 7777
+port = 7778
