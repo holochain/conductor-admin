@@ -1,7 +1,9 @@
 import Vue from "vue";
 import Vuetify from "vuetify/lib";
+import VueSplit from "vue-split-panel";
 
 Vue.use(Vuetify);
+Vue.use(VueSplit);
 
 export default new Vuetify({
   theme: {

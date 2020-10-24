@@ -1,18 +1,21 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const path = require("path");
 const multer = require("multer");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const { spawn } = require("child_process");
 const aWS = require("@holochain/conductor-api").AdminWebsocket;
-
+const sdk = require("./sdk");
 const holochain = spawn("holochain", [
   "-c",
   "/Users/philipbeadle/holochain-2020/conductor-admin/server/conductor/conductor.toml"
 ]);
-const ADMIN_PORT = 3301;
+const ADMIN_PORT = 26970;
+const SERVER_PORT = 11381;
 const DIR = "./applicationDnas/";
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, DIR);
@@ -38,9 +41,9 @@ const upload = multer({
     }
   }
 });
-const SERVER_PORT = 7401;
 app.use(express.static("public"));
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 
@@ -64,33 +67,39 @@ const conductorAgentSchema = new mongoose.Schema({
   agentKey: Object
 });
 const ConductorAgent = mongoose.model("ConductorAgent", conductorAgentSchema);
+ConductorAgent.countDocuments((err, count) => {
+  console.log(count);
+  if (err) return console.error(err);
+  if (count === 0) {
+    aWS.connect(`ws://localhost:${ADMIN_PORT}`).then(adminSocket => {
+      adminSocket.generateAgentPubKey().then(agentKey => {
+        const founder = new ConductorAgent({ agentKey });
+        founder.save(function(err) {
+          if (err) return console.error(err);
+        });
+      });
+    });
+  } else {
+    ConductorAgent.find(err => {
+      if (err) return console.error(err);
+    });
+  }
+});
+
 app.post("/uploadDnas", upload.array("files", 10), function(req, res) {
   res.status(201).json({
     message: "Done upload!"
   });
 });
 
-app.get("/init", (req, res) => {
-  ConductorAgent.countDocuments((err, count) => {
-    console.log(count);
-    if (err) return console.error(err);
-    if (count === 0) {
-      aWS.connect(`ws://localhost:${ADMIN_PORT}`).then(adminSocket => {
-        adminSocket.generateAgentPubKey().then(agentKey => {
-          const founder = new ConductorAgent({ agentKey });
-          founder.save(function(err, founder) {
-            if (err) return console.error(err);
-            res.send(`Initialised a new founder ${founder}`);
-          });
-        });
-      });
-    } else {
-      ConductorAgent.find((err, conductorAgents) => {
-        res.send(`Retrieved the founder${conductorAgents[0]}`);
-      });
-    }
-  });
-});
+// setup routes
+console.log(path.resolve(__dirname, "./fileTree"));
+app.use(
+  "/storage",
+  sdk.Router([new sdk.LocalStorage(path.resolve(__dirname, "./fileTree"))], {
+    uploadPath: path.resolve(__dirname, "./tmpUpload")
+  })
+);
 
 app.listen(SERVER_PORT, () => {
   console.log(`Example app listening at http://localhost:${SERVER_PORT}`);

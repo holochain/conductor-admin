@@ -9,11 +9,11 @@
         <img :src="require('@/assets/icons/GRADIENT_HALO.png')" />
       </v-avatar>
       <v-toolbar-title v-if="!loading" class="title ml-2">
-        {{ agent.handle }} Available Applications</v-toolbar-title
+        {{ agent.handle }} Applications</v-toolbar-title
       >
       <v-spacer></v-spacer>
     </v-app-bar>
-    <v-card-title>Installed Applications for xx on this Conductor</v-card-title>
+    <v-card-title>Installed Applications for {{ agent.handle }}</v-card-title>
     <v-row no-gutters height="100%">
       <v-col
         v-for="application in applications"
@@ -32,7 +32,7 @@
         </agent-application>
       </v-col>
     </v-row>
-    <v-card-title>Available Applications for xx on this Conductor</v-card-title>
+    <v-card-title>Available Applications for {{ agent.handle }}</v-card-title>
     <v-row no-gutters height="100%">
       <v-col
         v-for="application in applications"

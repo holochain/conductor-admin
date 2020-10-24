@@ -734,6 +734,14 @@
     "@babel/helper-create-regexp-features-plugin" "^7.12.1"
     "@babel/helper-plugin-utils" "^7.10.4"
 
+"@babel/polyfill@^7.6.0":
+  version "7.12.1"
+  resolved "https://registry.yarnpkg.com/@babel/polyfill/-/polyfill-7.12.1.tgz#1f2d6371d1261bbd961f3c5d5909150e12d0bd96"
+  integrity sha512-X0pi0V6gxLi6lFZpGmeNa4zxtwEmCs42isWLNjZZDE0Y8yVfgu0T2OAHlzBbdYlqbW/YXVvoBHpATEM+goCj8g==
+  dependencies:
+    core-js "^2.6.5"
+    regenerator-runtime "^0.13.4"
+
 "@babel/preset-env@^7.11.0":
   version "7.12.1"
   resolved "https://registry.yarnpkg.com/@babel/preset-env/-/preset-env-7.12.1.tgz#9c7e5ca82a19efc865384bb4989148d2ee5d7ac2"
@@ -2016,6 +2024,13 @@ aws4@^1.8.0:
   version "1.10.1"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.10.1.tgz#e1e82e4f3e999e2cfd61b161280d16a111f86428"
   integrity sha512-zg7Hz2k5lI8kb7U32998pRRFin7zJlkfezGJjUc2heaD4Pw2wObakCDVzkKztTm/Ln7eiVvYsjqak0Ed4LkMDA==
+
+axios@^0.19.0:
+  version "0.19.2"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.19.2.tgz#3ea36c5d8818d0d5f8a8a97a6d36b86cdc00cb27"
+  integrity sha512-fjgm5MvRHLhx+osE2xoekY70AhARk3a6hkN+3Io1jc00jtquGvxYlKlsFUhmUET0V5te6CcZI7lcv2Ym61mjHA==
+  dependencies:
+    follow-redirects "1.5.10"
 
 axios@^0.20.0:
   version "0.20.0"
@@ -3403,6 +3418,13 @@ debug@3.2.6, debug@^3.1.0, debug@^3.1.1, debug@^3.2.5:
   dependencies:
     ms "^2.1.1"
 
+debug@=3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-3.1.0.tgz#5bb5a0672628b64149566ba16819e61518c67261"
+  integrity sha512-OX8XqP7/1a9cqkxYw2yXss15f26NKWBpDXQd0/uK/KPqdQhxbPa994hnzjcE2VqQpDslf55723cKPUOGSmMY3g==
+  dependencies:
+    ms "2.0.0"
+
 debug@^4.0.1, debug@^4.1.0, debug@^4.1.1:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.2.0.tgz#7f150f93920e94c58f5574c2fd01a3110effe7f1"
@@ -4544,6 +4566,13 @@ flush-write-stream@^1.0.0:
   dependencies:
     inherits "^2.0.3"
     readable-stream "^2.3.6"
+
+follow-redirects@1.5.10:
+  version "1.5.10"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.5.10.tgz#7b7a9f9aea2fdff36786a94ff643ed07f4ff5e2a"
+  integrity sha512-0V5l4Cizzvqt5D44aTXbFZz+FtyXV1vrDN6qrelxtfYQKW0KO0W2T/hkE8xvGa/540LkZlkaUjO4ailYTFtHVQ==
+  dependencies:
+    debug "=3.1.0"
 
 follow-redirects@^1.0.0, follow-redirects@^1.10.0:
   version "1.13.0"
@@ -8844,6 +8873,11 @@ split-string@^3.0.1, split-string@^3.0.2:
   dependencies:
     extend-shallow "^3.0.0"
 
+split.js@^1.3.5:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/split.js/-/split.js-1.6.2.tgz#b8c63aeef2b15d84a003ead09e7def6ad166bb40"
+  integrity sha512-72C7zcQePzlmWqPOKkB2Ro0sUmnWSx+qEWXjLJKk6Qp4jAkFRz1hJgJb+ay6ZQyz/Aw9r8N/PZiCEKbPVpFoDQ==
+
 sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
@@ -9710,6 +9744,11 @@ vue-cli-plugin-vuetify@~2.0.7:
     semver "^7.1.2"
     shelljs "^0.8.3"
 
+vue-document-editor@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/vue-document-editor/-/vue-document-editor-1.1.0.tgz#1824048fcec52689a66151429d641564526cdf30"
+  integrity sha512-nIYfU/NNfC4n2BICSzwp+b/YqgeDwHpnh6pOZQuoQr0dNTYCx53iK7d5kmO4NEEofFCYHsTDjuy/LmV2+6WiNQ==
+
 vue-eslint-parser@^7.0.0:
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-7.1.1.tgz#c43c1c715ff50778b9a7e9a4e16921185f3425d3"
@@ -9726,6 +9765,13 @@ vue-hot-reload-api@^2.3.0:
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.3.4.tgz#532955cc1eb208a3d990b3a9f9a70574657e08f2"
   integrity sha512-BXq3jwIagosjgNVae6tkHzzIk6a8MHFtzAdwhnV5VlvPTFxDCvIttgSiHWjdGoTJvXtmRu5HacExfdarRcFhog==
+
+vue-info-card@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/vue-info-card/-/vue-info-card-0.1.4.tgz#34aeaf8ed120621b26aef1a31ccde86268340262"
+  integrity sha512-pXftcu71i/nlw2Y5btslUHHxMaUjlnrZ7F4xX8SqO2gvQZtzWy66NFbddl2GOOhtKe77U3YAEWMunrAMyvehsA==
+  dependencies:
+    vuetrend "^0.2.3"
 
 "vue-loader-v16@npm:vue-loader@^16.0.0-beta.7":
   version "16.0.0-beta.8"
@@ -9752,6 +9798,13 @@ vue-router@^3.2.0:
   resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.4.7.tgz#bf189bafd16f4e4ef783c4a6250a3090f2c1fa1b"
   integrity sha512-CbHXue5BLrDivOk5O4eZ0WT4Yj8XwdXa4kCnsEIOzYUPF/07ZukayA2jGxDCJxLc9SgVQX9QX0OuGOwGlVB4Qg==
 
+vue-split-panel@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/vue-split-panel/-/vue-split-panel-1.0.4.tgz#77b75399236bb7610e053598cc33c4988573ad6b"
+  integrity sha512-OGR+2vIHGcXjpXMh7Pv6uG0t6ihL8o8wmHLeKfvArNPJs/Z0GYLplDcUdTg7Z/Et+IsYVlR13f83oiuRVLYOkw==
+  dependencies:
+    split.js "^1.3.5"
+
 vue-style-loader@^4.1.0, vue-style-loader@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/vue-style-loader/-/vue-style-loader-4.1.2.tgz#dedf349806f25ceb4e64f3ad7c0a44fba735fcf8"
@@ -9773,7 +9826,7 @@ vue-template-es2015-compiler@^1.9.0:
   resolved "https://registry.yarnpkg.com/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.9.1.tgz#1ee3bc9a16ecbf5118be334bb15f9c46f82f5825"
   integrity sha512-4gDntzrifFnCEvyoO8PqyJDmguXgVPxKiIxrBKjIowvL9l+N66196+72XVYR8BBf1Uv1Fgt3bGevJ+sEmxfZzw==
 
-vue@^2.6.11:
+vue@^2.6.10, vue@^2.6.11:
   version "2.6.12"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.12.tgz#f5ebd4fa6bd2869403e29a896aed4904456c9123"
   integrity sha512-uhmLFETqPPNyuLLbsKz6ioJ4q7AZHzD8ZVFNATNyICSZouqP2Sz0rotWQC8UNBF6VGSCs5abnKJoStA6JbCbfg==
@@ -9784,6 +9837,15 @@ vueclaw@^1.1.0:
   integrity sha512-rHPgAud0JBXaNWMwf2hqrCoCR+tjnmWlVDkBayxhTCwSXOYIQnxNtwOSbrVkhtnN4LfTZoqIX8mkuk9tFyr7/Q==
   dependencies:
     "@seregpie/claw" "^3.0.0"
+
+vuetify-file-browser@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/vuetify-file-browser/-/vuetify-file-browser-1.0.2.tgz#dc22b4cb70fe0c02d68b2a577943b83c63c49ad3"
+  integrity sha512-rJYmuThgHBK8NxRolcOv+XNrhTcADfNTVFfqeCXmNOS3t4K0vF9KX6YCiSUSaOA8631xLAjTMT9F615Pd3O5tA==
+  dependencies:
+    "@babel/polyfill" "^7.6.0"
+    axios "^0.19.0"
+    vue "^2.6.10"
 
 vuetify-image-input@^19.1.0:
   version "19.1.0"
@@ -9804,6 +9866,11 @@ vuetify@^2.2.11:
   version "2.3.15"
   resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-2.3.15.tgz#ea148acce8f5bc272f64f03a0d2ace09e58e092c"
   integrity sha512-YVJN/ld60S2mmFCKxoVFkB8X2kmuLT0E28ql4kr8HQUeCYdK8axoca/N8ZIP1hFH4NIz392f0nVpZKS4ZFZBVA==
+
+vuetrend@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/vuetrend/-/vuetrend-0.2.3.tgz#cb8412709af089d89c1b507037355dd63b269389"
+  integrity sha512-UABGhn/RbVWpI1mZLQz467o6LkQH6mXg1tPln6lfl5NjzU0HEAPQJK+UptbOzs+/JWewk+oU+alUqW4t/GzQ9Q==
 
 vuewordcloud@^18.7.12:
   version "18.7.12"
