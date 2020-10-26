@@ -1,6 +1,5 @@
 <template>
   <v-app>
-    <core-app-bar />
     <core-drawer :navOpen="navOpen" @close-nav-bar="navOpen = false" />
     <v-main>
       <v-responsive height="100%">
@@ -16,7 +15,6 @@
 export default {
   name: "App",
   components: {
-    CoreAppBar: () => import("@/components/core/AppBar"),
     CoreDrawer: () => import("@/components/core/Drawer")
   },
   data() {
@@ -25,10 +23,13 @@ export default {
     };
   },
   created() {
-    this.$store.dispatch("initialiseDexie").then(() => {
-      this.$store.dispatch("conductor/fetchAgents");
-      this.$store.dispatch("conductor/fetchApplications");
-    });
+    this.$store
+      .dispatch("initialiseStore", { webSocketUrl: "http://localhost:11381" })
+      .then(() => {
+        this.$store.dispatch("builder/initialise");
+        this.$store.dispatch("conductor/fetchAgents");
+        this.$store.dispatch("conductor/fetchApplications");
+      });
     this.$vuetify.theme.dark = true;
   }
 };

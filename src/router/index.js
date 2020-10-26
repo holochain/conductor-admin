@@ -26,9 +26,9 @@ const routes = [
     component: () => import("@/apps/conductorAdmin/views/AgentApplications.vue")
   },
   {
-    path: "/file-editor",
-    name: "File Editor",
-    component: () => import("@/apps/fileEditor/views/FileEditor.vue")
+    path: "/builder",
+    name: "Builder",
+    component: () => import("@/apps/builder/views/Builder.vue")
   }
 ];
 

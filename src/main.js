@@ -4,9 +4,7 @@ import "./registerServiceWorker";
 import router from "./router";
 import store from "./store";
 import vuetify from "./plugins/vuetify";
-import Dexie from "dexie";
 
-store.state.db = new Dexie("holochain");
 Vue.config.productionTip = false;
 
 new Vue({

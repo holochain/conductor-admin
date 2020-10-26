@@ -6,13 +6,17 @@ const multer = require("multer");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const { spawn } = require("child_process");
-const aWS = require("@holochain/conductor-api").AdminWebsocket;
+const WebSocket = require("socket.io");
+const holochainAdminWebSocket = require("@holochain/conductor-api")
+  .AdminWebsocket;
+const holochainAppWebSocket = require("@holochain/conductor-api").AppWebsocket;
 const sdk = require("./sdk");
 const holochain = spawn("holochain", [
   "-c",
   "/Users/philipbeadle/holochain-2020/conductor-admin/server/conductor/conductor.toml"
 ]);
-const ADMIN_PORT = 26970;
+const HOLOCHAIN_ADMIN_PORT = 26970;
+const HOLOCHAIN_APP_PORT = 15108;
 const SERVER_PORT = 11381;
 const DIR = "./applicationDnas/";
 
@@ -46,8 +50,8 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
+const appWebSocketServer = new WebSocket.Server({ server: app });
 
-// MongoDB Setup
 mongoose.Promise = global.Promise;
 mongoose
   .connect("mongodb://localhost:27017/conductor", {
@@ -71,14 +75,16 @@ ConductorAgent.countDocuments((err, count) => {
   console.log(count);
   if (err) return console.error(err);
   if (count === 0) {
-    aWS.connect(`ws://localhost:${ADMIN_PORT}`).then(adminSocket => {
-      adminSocket.generateAgentPubKey().then(agentKey => {
-        const founder = new ConductorAgent({ agentKey });
-        founder.save(function(err) {
-          if (err) return console.error(err);
+    holochainAdminWebSocket
+      .connect(`ws://localhost:${HOLOCHAIN_ADMIN_PORT}`)
+      .then(adminSocket => {
+        adminSocket.generateAgentPubKey().then(agentKey => {
+          const founder = new ConductorAgent({ agentKey });
+          founder.save(function(err) {
+            if (err) return console.error(err);
+          });
         });
       });
-    });
   } else {
     ConductorAgent.find(err => {
       if (err) return console.error(err);
@@ -92,8 +98,6 @@ app.post("/uploadDnas", upload.array("files", 10), function(req, res) {
   });
 });
 
-// setup routes
-console.log(path.resolve(__dirname, "./fileTree"));
 app.use(
   "/storage",
   sdk.Router([new sdk.LocalStorage(path.resolve(__dirname, "./fileTree"))], {
@@ -104,6 +108,17 @@ app.use(
 app.listen(SERVER_PORT, () => {
   console.log(`Example app listening at http://localhost:${SERVER_PORT}`);
 });
+
+appWebSocketServer.on("connection", client => {
+  holochainAppWebSocket
+    .connect(`ws://localhost:${HOLOCHAIN_APP_PORT}`)
+    .then(webSocket => {
+      client.holochainAdminWebSocket = webSocket;
+      client.send("connected");
+    });
+});
+
+appWebSocketServer.on("saveAgent", client => {});
 
 holochain.stdout.on("data", data => {
   console.log(`stdout: ${data}`);

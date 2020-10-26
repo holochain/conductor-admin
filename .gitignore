@@ -41,7 +41,4 @@ perf.data.old
 .env
 *.folded
 *.svg
-
-
-#Electron-builder output
-/dist_electron
+server/.cargo/

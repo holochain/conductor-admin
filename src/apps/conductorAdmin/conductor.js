@@ -24,7 +24,7 @@ export default {
   state: {
     conductor: {
       uuid: "2deb6610-911c-4cfc-b3c4-d89af573fa58",
-      name: "Phil's Holochain Conductor",
+      name: "Phil's Developer Conductor",
       folder:
         "/Users/philipbeadle/holochain-2020/conductor-admin/conductor/applicationDnas/"
     },
@@ -63,6 +63,12 @@ export default {
       rootState.db.agents.put(agent).then(() => {
         if (payload.action === "create") {
           commit("createAgent", agent);
+          console.log("createAgent", agent);
+          rootState.socket.emit("CREATE_AGENT", "", agentKey => {
+            agent.agentKey = agentKey;
+            console.log(agent);
+            commit("updateAgent", agent);
+          });
         } else {
           commit("updateAgent", agent);
         }
