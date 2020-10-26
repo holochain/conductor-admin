@@ -17,7 +17,7 @@
         </v-list-item-avatar>
         <v-list-item-content>
           <v-list-item-title>
-            Conductor
+            Conductors
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -62,9 +62,9 @@ export default {
     items() {
       return [
         {
-          icon: "mdi-file-tree-outline",
-          text: "File Editor",
-          to: "/file-editor"
+          icon: "mdi-code-braces",
+          text: "App Developer",
+          to: "/builder"
         },
         {
           icon: "mdi-apps",
