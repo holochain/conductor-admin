@@ -22,6 +22,54 @@ let hcClient = {};
 //       fs.mkdirSync(dirname, { recursive: true });
 //     }
 //   }
+function getFileType(fileName) {
+  const index = fileName.lastIndexOf(".") + 1;
+  const fileType = fileName.substring(index, fileName.length);
+  return fileType;
+}
+function getFoldersAndFiles(parentDir, socket) {
+  console.log(parentDir);
+  const entries = fs.readdirSync(parentDir, { withFileTypes: true });
+  const folders = entries
+  .filter(entry => entry.isDirectory())
+  .filter(entry => entry.name !== ".git")
+  .filter(entry => entry.name !== "node_modules");
+  for (const folder of folders) {
+    const folderEntries = fs.readdirSync(`${parentDir}${folder.name}/`, {
+      withFileTypes: true
+    });
+    if (folderEntries.length > 0) {
+      const newDirectory = {
+        parentDir: parentDir.replace(`${__dirname}/dev-apps`, ""),
+        name: folder.name,
+        type: "dir"
+      };
+      socket.emit("RECURSE_APPLICATION_FILES", newDirectory);
+      getFoldersAndFiles(`${parentDir}${folder.name}/`, socket);
+    }
+  }
+  const files = entries.filter(entry => !entry.isDirectory());
+  for (const file of files) {
+    let fileExtension = getFileType(file.name);
+    let contentPrefix = "";
+    let fileEncoding = "utf8";
+    if (["png", "jpg", "jpeg"].find(ext => ext === fileExtension)) {
+      if (fileExtension === "jpg") fileExtension = "jpeg";
+      fileEncoding = "base64";
+      contentPrefix = `data:image/${fileExtension};base64,`;
+    }
+    const content = `${contentPrefix}${fs.readFileSync(`${parentDir}${file.name}`, fileEncoding)}`;
+    const newFile = {
+      parentDir: parentDir.replace(`${__dirname}/dev-apps`, ""),
+      name: file.name,
+      type: "file",
+      extension: fileExtension,
+      encoding: fileEncoding,
+      content: content
+    };
+    socket.emit("RECURSE_APPLICATION_FILES", newFile);
+  }
+}
 
 io.on("connection", socket => {
   console.log("Connected", socket.id);
@@ -34,7 +82,7 @@ io.on("connection", socket => {
   socket.on("CREATE_DIRECTORY", (payload, callback) => {
     console.log("CREATE_DIRECTORY", payload);
     fs.mkdir(
-      `/Users/philipbeadle/holochain-2020/conductor-admin/server/dev-apps/${payload.path}`,
+      `/Users/philipbeadle/holochain-2020/server/dev-apps/${payload.path}`,
       { recursive: true },
       err => {
         if (err) throw err;
@@ -43,19 +91,18 @@ io.on("connection", socket => {
     );
   });
 
+  socket.on("RECURSE_APPLICATION_FILES", (payload, callback) => {
+    console.log("RECURSE_APPLICATION_FILES", payload.name);
+    getFoldersAndFiles(`/Users/philipbeadle/holochain-2020/server/dev-apps/${payload.name}/`, socket);
+    callback("Done");
+  });
+  
   socket.on("CREATE_APPLICATION", (payload, callback) => {
-    console.log(
-      "CREATE_APPLICATION",
-      `cd dev-apps/ && vue create ${payload.name} -d -n -b --skipGetStarted`
-    );
-    callback(
-      "CREATE_APPLICATION",
-      `cd dev-apps/ && vue create ${payload.name} -d -n -b --skipGetStarted`
-    );
-    const appCreator = spawn(
-      `cd dev-apps/ && vue create ${payload.name} -d -n -b --skipGetStarted`,
-      { shell: true }
-    );
+    console.log(payload);
+    const createApp = `cd dev-apps && echo | vue create ${payload.name} --preset vuetifyjs/preset && cd ${payload.name} && git stash && vue add vuetify-preset-reply`;
+    console.log("CREATE_APPLICATION", createApp);
+    callback("CREATE_APPLICATION", `Started creating ${payload.name}`);
+    const appCreator = spawn(createApp, { shell: true });
     appCreator.stderr.on("data", function(err) {
       console.error("STDERR:", err.toString());
       socket.emit("CREATE_APLICATION_ERROR", err.toString());

@@ -35,7 +35,7 @@
     </v-system-bar>
     <v-row no-gutters height="100%">
       <v-col>
-        <split :style="`height: ${cwHeight}px; width: 100%;`" :gutterSize="2">
+        <split :key="cwHeight" :style="`height: ${cwHeight}px; width: 100%;`" :gutterSize="2">
           <split-area :size="25">
             <file-tree
               @dir-selected="dirSelected"
@@ -93,7 +93,7 @@
             v-if="!showRefresh"
             color="action darken-1"
             text
-            @click="createApplication(name)"
+            @click="createApplication({ name })"
           >
             Create
           </v-btn>
@@ -101,7 +101,7 @@
             v-if="showRefresh"
             color="action darken-1"
             text
-            @click="dialog = false"
+            @click="recurseApplicationFiles({ name })"
           >
             Finish
           </v-btn>
@@ -121,7 +121,7 @@ export default {
   },
   data() {
     return {
-      cwHeight: 500,
+      cwHeight: 0,
       dialog: false,
       parentDir: "",
       name: ""
@@ -134,17 +134,19 @@ export default {
     ...mapActions("builder", [
       "createApplication",
       "createDirectory",
-      "createFile"
+      "createFile",
+      "recurseApplicationFiles"
     ]),
     setCodeWindowHeight() {
-      this.cwHeight = this.$el.clientHeight - 44;
+      this.cwHeight = this.$el.clientHeight;
     },
     dirSelected(directory) {
       this.parentDir = `${directory.parentDir}/${directory.name}`;
       console.log(this.parentDir);
     },
     fileSelected(file) {
-      console.log(file);
+      this.parentDir = `${file.parentDir}`;
+      console.log(this.parentDir);
     },
     newFolder() {
       this.createDirectory({ parentDir: this.parentDir, name: "components" });
@@ -156,6 +158,9 @@ export default {
       var container = this.$el.querySelector("#container");
       container.scrollTop = container.scrollHeight;
     }
+  },
+  mounted() {
+    this.setCodeWindowHeight();
   }
 };
 </script>

@@ -1,16 +1,18 @@
 <template>
   <div>
     <v-treeview
+      :key="refreshTreeKey"
       :active.sync="active"
       :open.sync="open"
       :items="items"
+      :load-children="listDirectory"
       activatable
       item-key="name"
       open-on-click
       dense
     >
       <template v-slot:prepend="{ item, open }">
-        <v-icon v-if="item.type === 'dir'" @click="$emit('dir-selected', item)">
+        <v-icon v-if="item.type === 'dir'" @click.stop="listDirectory(item); $emit('dir-selected', item)">
           {{ open ? "mdi-folder-open" : "mdi-folder" }}
         </v-icon>
         <v-icon v-else>
@@ -18,7 +20,7 @@
         </v-icon>
       </template>
       <template v-slot:label="{ item }">
-        <span v-if="item.type === 'dir'" @click="$emit('dir-selected', item)">
+        <span v-if="item.type === 'dir'" @click.stop="listDirectory(item); $emit('dir-selected', item)">
           {{ item.name }}
         </span>
         <span v-else @click="$emit('file-selected', item)">
@@ -35,6 +37,7 @@ export default {
   components: {},
   data() {
     return {
+      refreshTreeKey: 0,
       codeWindowHeight: 200,
       open: [],
       active: [],
@@ -65,28 +68,7 @@ export default {
         vue: "mdi-vuetify"
       },
       tree: [],
-      items: [
-        {
-          parentDir: "",
-          name: "Chat",
-          type: "dir",
-          children: [
-            {
-              parentDir: "Chat",
-              name: "src",
-              type: "dir",
-              children: [
-                {
-                  parentDir: "Chat/src",
-                  name: "lib",
-                  type: "file",
-                  extension: "rs"
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      items: []
     };
   },
   computed: {},
@@ -96,10 +78,27 @@ export default {
     },
     createApplication() {
       console.log("createApplication");
+    },
+    async listDirectory(item) {
+      const parentDir = `${item.parentDir}${item.name}/`
+      console.log(parentDir);
+      const entries = await this.$store.state.db.files.where({ parentDir }).toArray();
+      item.children = entries.map(item => {
+        if (item.type === "dir") {
+          item.children = [];
+        }
+        return item;
+      });      
+      console.log(item);
+      this.refreshTreeKey++;
     }
   },
   mounted() {
     this.setCodeWindowHeight();
+    this.$store.state.db.files.where({ parentDir: "/" }).toArray(items => {
+      console.log(items);
+      this.items = items;
+    });
   }
 };
 </script>

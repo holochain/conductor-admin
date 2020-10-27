@@ -31,12 +31,12 @@
                 offset-x="30"
               >
                 <v-list-item-avatar size="30" class="ml-1 mr-5">
-                  <v-icon>mdi-face-agent</v-icon>
+                  <v-icon>mdi-account-key-outline</v-icon>
                 </v-list-item-avatar>
               </v-badge>
               <v-list-item-content>
                 <v-list-item-title>
-                  Agents
+                  Keys
                 </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
@@ -107,12 +107,12 @@
                 offset-x="30"
               >
                 <v-list-item-avatar size="30" class="ml-1 mr-5">
-                  <v-icon>mdi-face-agent</v-icon>
+                  <v-icon>mdi-account-key-outline</v-icon>
                 </v-list-item-avatar>
               </v-badge>
               <v-list-item-content>
                 <v-list-item-title>
-                  Agents
+                  Keys
                 </v-list-item-title>
               </v-list-item-content>
             </v-list-item>

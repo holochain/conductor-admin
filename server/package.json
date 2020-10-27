@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "server": "node server.js",
-    "server:nodemon": "nodemon server.js"
+    "server:node": "node server.js",
+    "server": "nodemon server.js --ignore './dev-apps/'"
   },
   "dependencies": {
     "@holochain/conductor-api": "^0.0.1-dev.9",
