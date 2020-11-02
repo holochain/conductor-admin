@@ -28,7 +28,14 @@ const routes = [
   {
     path: "/builder",
     name: "Builder",
-    component: () => import("@/apps/builder/views/Builder.vue")
+    component: () => import("@/layouts/crispr/Index.vue"),
+    children: [
+      {
+        path: "",
+        name: "Builder1",
+        component: () => import("@/apps/builder/views/Builder.vue")
+      }
+    ]
   }
 ];
 

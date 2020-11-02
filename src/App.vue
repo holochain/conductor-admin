@@ -1,21 +1,14 @@
 <template>
-  <v-app>
-    <core-drawer :navOpen="navOpen" @close-nav-bar="navOpen = false" />
-    <v-main>
-      <v-responsive height="100%">
-        <transition name="fade">
-          <router-view id="router" @open-nav-bar="navOpen = !navOpen" />
-        </transition>
-      </v-responsive>
-    </v-main>
-  </v-app>
+  <v-fade-transition mode="out-in">
+    <router-view />
+  </v-fade-transition>
 </template>
 
 <script>
 export default {
   name: "App",
   components: {
-    CoreDrawer: () => import("@/components/core/Drawer")
+    // CoreDrawer: () => import("@/components/core/Drawer")
   },
   data() {
     return {
