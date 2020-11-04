@@ -154,6 +154,11 @@ export default {
     async recurseApplicationFiles({ rootState, dispatch }, payload) {
       const name = payload.name;
       console.log(name);
+      rootState.db.files.put({
+        parentDir: "/",
+        name,
+        type: "dir"
+      });
       rootState.socket.emit("RECURSE_APPLICATION_FILES", { name }, success => {
         console.log(success);
         dispatch("refreshFiles");
@@ -213,11 +218,11 @@ export default {
     },
     async getTemplates({ commit, rootState }) {
       console.log("GET_TEMPLATES");
-      rootState.socket.emit("GET_TEMPLATES", { }, templates => {
+      rootState.socket.emit("GET_TEMPLATES", {}, templates => {
         commit("dnaTemplates", templates);
       });
     },
-    async cloneDna({ rootState,dispatch }, payload) {
+    async cloneDna({ rootState, dispatch }, payload) {
       const template = payload.template;
       const name = payload.name;
       rootState.socket.emit("CLONE_DNA", { template, name }, message => {
@@ -225,66 +230,48 @@ export default {
         dispatch("recurseApplicationFiles", { name });
       });
     },
-    async cloneDevConductor({ rootState,dispatch }, payload) {
+    async cloneDevConductor({ rootState, dispatch }, payload) {
       const name = payload.name;
       rootState.socket.emit("CLONE_DEV_CONDUCTOR", { name }, message => {
         console.log(message);
         dispatch("recurseApplicationFiles", { name });
       });
     },
-    async cloneSocket({ rootState,dispatch }, payload) {
+    async cloneSocket({ rootState, dispatch }, payload) {
       const name = payload.name;
       rootState.socket.emit("CLONE_SOCKET", { name }, message => {
         console.log(message);
         dispatch("recurseApplicationFiles", { name });
       });
-    }
-  },
-  mutations: {
-    setApplicationName(state, payload) {
-      state.applicationName = payload;
-    },    
-    clearStdOutMessages(state) {
-      state.stdOutMessages = [];
     },
-    stdOutMessage(state, payload) {
-      state.stdOutMessages.push(payload);
+    async getWebPartTemplates({ commit, rootState }, payload) {
+      const type = payload.type;
+      console.log("GET_WEB_PART_TEMPLATES", payload);
+      rootState.socket.emit("GET_WEB_PART_TEMPLATES", { type }, templates => {
+        commit("webPartTemplates", templates);
+      });
     },
-    clearAppServerMessages(state) {
-      state.appServerMessages = [];
-    },
-    appServerMessage(state, payload) {
-      state.appServerMessages.push(payload);
-    },
-    clearSocketServerMessages(state) {
-      state.socketServerMessages = [];
-    },
-    socketServerMessage(state, payload) {
-      state.socketServerMessages.push(payload);
-    },
-    dnaTemplates(state, payload) {
-      state.dnaTemplates = payload;
-    },
-    showRefresh(state) {
-      state.showRefresh = true;
-    },
-    setFile(state, payload) {
-      state.openFiles = state.openFiles.map(file =>
-        `${file.parentDir}/${file.name}` !==
-        `${payload.parentDir}/${payload.name}`
-          ? file
-          : { ...file, ...payload }
+    async cloneWebPart({ rootState, dispatch }, payload) {
+      const type = payload.type;
+      const template = payload.template;
+      const name = payload.name;
+      rootState.socket.emit(
+        "CLONE_WEB_PART",
+        { type, template, name },
+        message => {
+          console.log(message);
+          dispatch("recurseApplicationFiles", { name });
+        }
       );
-      state.refreshKey++;
     },
-    openFile(state, payload) {
+    openFile({ rootState, state, commit }, payload) {
       const alreadyOpenTab = state.openFiles.findIndex(
         file =>
           `${file.parentDir}/${file.name}` ===
           `${payload.parentDir}/${payload.name}`
       );
       if (alreadyOpenTab === -1) {
-        state.openFiles.push(payload);
+        commit("pushOpenFiles", payload);
         const opts = {
           tabSize: 2,
           keyMap: "sublime",
@@ -293,7 +280,21 @@ export default {
           readOnly: false,
           lineNumbers: true,
           line: true,
-          lineWrapping: true
+          lineWrapping: true,
+          extraKeys: {
+            "Cmd-S": function(instance) {
+              const saveFile = {
+                parentDir: payload.parentDir,
+                name: payload.name,
+                type: "file",
+                extension: payload.extension,
+                encoding: payload.encoding,
+                content: instance.getValue()
+              };
+              rootState.db.files.put(saveFile);
+              rootState.socket.emit("SAVE_FILE", saveFile);
+            }
+          }
         };
         switch (payload.extension) {
           case "png":
@@ -326,12 +327,62 @@ export default {
         }
         payload.options = opts;
         payload.edited = false;
-        state.openFile = payload;
-        state.selectedTab = state.openFiles.length - 1;
+        commit("openFile", payload);
+        commit("selectedTab", state.openFiles.length - 1);
       } else {
-        state.openFile = state.openFiles[alreadyOpenTab];
-        state.selectedTab = alreadyOpenTab;
+        commit("openFile", state.openFiles[alreadyOpenTab]);
+        commit("selectedTab", alreadyOpenTab);
       }
+    }
+  },
+  mutations: {
+    setApplicationName(state, payload) {
+      state.applicationName = payload;
+    },
+    clearStdOutMessages(state) {
+      state.stdOutMessages = [];
+    },
+    stdOutMessage(state, payload) {
+      state.stdOutMessages.push(payload);
+    },
+    clearAppServerMessages(state) {
+      state.appServerMessages = [];
+    },
+    appServerMessage(state, payload) {
+      state.appServerMessages.push(payload);
+    },
+    clearSocketServerMessages(state) {
+      state.socketServerMessages = [];
+    },
+    socketServerMessage(state, payload) {
+      state.socketServerMessages.push(payload);
+    },
+    dnaTemplates(state, payload) {
+      state.dnaTemplates = payload;
+    },
+    webPartTemplates(state, payload) {
+      state.webPartTemplates = payload;
+    },
+    showRefresh(state) {
+      state.showRefresh = true;
+    },
+    setFile(state, payload) {
+      state.openFiles = state.openFiles.map(file =>
+        `${file.parentDir}/${file.name}` !==
+        `${payload.parentDir}/${payload.name}`
+          ? file
+          : { ...file, ...payload }
+      );
+      state.refreshKey++;
+    },
+    selectedTab(state, payload) {
+      state.selectedTab = payload;
+    },
+    openFile(state, payload) {
+      state.openFile = payload;
+    },
+    pushOpenFiles(state, payload) {
+      state.openFiles.push(payload);
     },
     setSelectedTab(state, payload) {
       state.selectedTab = payload;

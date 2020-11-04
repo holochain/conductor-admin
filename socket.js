@@ -16,7 +16,7 @@ const hcAws = require("@holochain/conductor-api").AdminWebsocket;
 let hcClient = {};
 
 function getFileType(fileName) {
-  if (fileName.startsWith(".")) return fileName;
+  if (fileName.startsWith(".")) return fileName.replace(".", "");
   const index = fileName.lastIndexOf(".") + 1;
   const fileType = fileName.substring(index, fileName.length);
   return fileType;
@@ -27,7 +27,12 @@ function getFoldersAndFiles(parentDir, socket) {
   const folders = entries
     .filter(entry => entry.isDirectory())
     .filter(entry => entry.name !== ".git")
-    .filter(entry => entry.name !== "node_modules");
+    .filter(entry => entry.name !== "node_modules")
+    .filter(entry => entry.name !== "target")
+    .filter(entry => entry.name !== "dist")
+    .filter(entry => entry.name !== ".wasm_cache")
+    .filter(entry => entry.name !== ".wasm_target")
+    .filter(entry => entry.name !== ".cargo");
   for (const folder of folders) {
     console.log(folder.name);
     const folderEntries = fs.readdirSync(`${parentDir}${folder.name}/`, {
@@ -80,6 +85,18 @@ io.on("connection", socket => {
     });
   });
 
+  socket.on("SAVE_FILE", payload => {
+    console.log("SAVE_FILE", payload);
+    fs.writeFile(
+      `${__dirname}/dev-apps/${payload.parentDir}${payload.name}`,
+      payload.content,
+      err => {
+        if (err) throw err;
+        console.log(`${payload.parentDir}${payload.name} has been saved!`);
+      }
+    );
+  });
+
   socket.on("CREATE_DIRECTORY", (payload, callback) => {
     console.log("CREATE_DIRECTORY", payload);
     fs.mkdir(
@@ -94,16 +111,38 @@ io.on("connection", socket => {
 
   socket.on("GET_TEMPLATES", (payload, callback) => {
     console.log("GET_TEMPLATES");
-    let entries = fs.readdirSync("./templates", { withFileTypes: true });
-    entries = entries.filter(entry => entry.isDirectory())
-      .filter(entry => entry.name !== "conductor");
-    const templates = entries.map(folder => ({ ...folder, preview: `data:image/png;base64,${fs.readFileSync(`./templates/${folder.name}/preview.png`, "base64")}`}));
+    let entries = fs.readdirSync("./templates/dna/", { withFileTypes: true });
+    entries = entries.filter(entry => entry.isDirectory());
+    const templates = entries.map(folder => ({
+      ...folder,
+      preview: `data:image/png;base64,${fs.readFileSync(
+        `./templates/dna/${folder.name}/preview.png`,
+        "base64"
+      )}`
+    }));
+    callback(templates);
+  });
+
+  socket.on("GET_WEB_PART_TEMPLATES", (payload, callback) => {
+    console.log("GET_WEB_PART_TEMPLATES");
+    let entries = fs.readdirSync(`./templates/${payload.type}/`, {
+      withFileTypes: true
+    });
+    entries = entries.filter(entry => entry.isDirectory());
+    console.log(entries);
+    const templates = entries.map(folder => ({
+      ...folder,
+      preview: `data:image/png;base64,${fs.readFileSync(
+        `./templates/${payload.type}/${folder.name}/preview.png`,
+        "base64"
+      )}`
+    }));
     callback(templates);
   });
 
   socket.on("CLONE_DNA", (payload, callback) => {
     console.log("CLONE_DNA", payload);
-    const cloneDna = `cp -r ./templates/${payload.template} ./dev-apps/${payload.name}/dna`;
+    const cloneDna = `cp -r ./templates/${payload.template} ./dev-apps/${payload.name}/dna && cd dev-apps/${payload.name}/dna/tests && npm install`;
     const dnaCloner = spawn(cloneDna, { shell: true });
     dnaCloner.stderr.on("data", function(err) {
       console.error("STDERR:", err.toString());
@@ -146,6 +185,22 @@ io.on("connection", socket => {
     socketCloner.on("exit", function(exitCode) {
       console.log("Child exited with code: " + exitCode);
       callback("Child exited with code: " + exitCode);
+    });
+  });
+
+  socket.on("CLONE_WEB_PART", (payload, callback) => {
+    console.log("CLONE_WEB_PART", payload);
+    const cloneDna = `cp -r ./templates/${payload.type}/${payload.template} ./dev-apps/${payload.name}/${payload.type}/${payload.template}`;
+    const dnaCloner = spawn(cloneDna, { shell: true });
+    dnaCloner.stderr.on("data", function(err) {
+      console.error("STDERR:", err.toString());
+    });
+    dnaCloner.stdout.on("data", function(data) {
+      console.log("STDOUT:", data.toString());
+    });
+    dnaCloner.on("exit", function(exitCode) {
+      console.log("CLONE_WEB_PART exited with code: " + exitCode);
+      callback("CLONE_WEB_PART exited with code: " + exitCode);
     });
   });
 

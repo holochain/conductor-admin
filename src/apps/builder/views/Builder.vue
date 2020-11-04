@@ -19,13 +19,19 @@
           </v-btn>
         </template>
         <v-list dense>
-          <v-list-item @click="createApplicationDialog = true" key="newApplication">
+          <v-list-item
+            @click="createApplicationDialog = true"
+            key="newApplication"
+          >
             <v-list-item-avatar>
               <v-icon>mdi-vuetify</v-icon>
             </v-list-item-avatar>
             <v-list-item-title>New Vuetify Web App</v-list-item-title>
           </v-list-item>
-          <v-list-item key="newSocket" @click="cloneSocket({ name: applicationName })">
+          <v-list-item
+            key="newSocket"
+            @click="cloneSocket({ name: applicationName })"
+          >
             <v-list-item-avatar size="25" class="ml-2">
               <img
                 contain
@@ -35,13 +41,22 @@
             </v-list-item-avatar>
             <v-list-item-title class="ml-2">New Socket.io</v-list-item-title>
           </v-list-item>
-          <v-list-item key="newDna" @click="getTemplates(); addDnaDialog = true">
+          <v-list-item
+            key="newDna"
+            @click="
+              getTemplates();
+              addDnaDialog = true;
+            "
+          >
             <v-list-item-avatar>
               <v-icon>mdi-dna</v-icon>
             </v-list-item-avatar>
             <v-list-item-title>New Holochain DNA</v-list-item-title>
           </v-list-item>
-          <v-list-item key="newDevconductor" @click="cloneDevConductor({ name: applicationName })">
+          <v-list-item
+            key="newDevconductor"
+            @click="cloneDevConductor({ name: applicationName })"
+          >
             <v-list-item-avatar size="35">
               <img
                 contain
@@ -49,9 +64,20 @@
                 :src="require('@/assets/icons/GRADIENT_HALO.png')"
               />
             </v-list-item-avatar>
-            <v-list-item-title class="ml-1">New Developer Conductor</v-list-item-title>
+            <v-list-item-title class="ml-1"
+              >New Developer Conductor</v-list-item-title
+            >
           </v-list-item>
           <v-divider></v-divider>
+          <v-list-item
+            key="refreshFiles"
+            @click="recurseApplicationFiles({ name: 'ledger' })"
+          >
+            <v-list-item-avatar>
+              <v-icon>mdi-refresh</v-icon>
+            </v-list-item-avatar>
+            <v-list-item-title>Refresh</v-list-item-title>
+          </v-list-item>
           <v-list-item @click="newFolder" key="newFolder">
             <v-list-item-avatar>
               <v-icon>mdi-folder-outline</v-icon>
@@ -80,17 +106,23 @@
           </v-btn>
         </template>
         <v-list dense>
-          <v-list-item key="addLayout">
+          <v-list-item
+            key="addLayout"
+            @click="
+              getWebPartTemplates({ type: 'layouts' });
+              addWebPartDialog = true;
+            "
+          >
             <v-list-item-avatar>
               <v-icon>mdi-page-layout-body</v-icon>
             </v-list-item-avatar>
             <v-list-item-title>Add Layout</v-list-item-title>
           </v-list-item>
-          <v-list-item key="addModule">
+          <v-list-item key="addView">
             <v-list-item-avatar>
-              <v-icon>mdi-folder-multiple-plus-outline</v-icon>
+              <v-icon>mdi-view-quilt-outline</v-icon>
             </v-list-item-avatar>
-            <v-list-item-title>Add Module</v-list-item-title>
+            <v-list-item-title>Add View</v-list-item-title>
           </v-list-item>
           <v-list-item key="addAppComponent">
             <v-list-item-avatar>
@@ -310,7 +342,11 @@
                   </v-tab-item>
                   <v-tab>
                     Socket
-                    <v-avatar size="25" class="ml-2" @click="socketServer({ name: applicationName })">
+                    <v-avatar
+                      size="25"
+                      class="ml-2"
+                      @click="socketServer({ name: applicationName })"
+                    >
                       <img
                         contain
                         width="25"
@@ -333,7 +369,9 @@
                   </v-tab-item>
                   <v-tab>
                     Lint
-                    <v-icon @click="lintFiles({ name: applicationName })">mdi-eslint</v-icon>
+                    <v-icon @click="lintFiles({ name: applicationName })"
+                      >mdi-eslint</v-icon
+                    >
                   </v-tab>
                   <v-tab-item key="lintTab">
                     <div class="std-container">
@@ -442,7 +480,10 @@
             v-if="showRefresh"
             color="action darken-1"
             text
-            @click="recurseApplicationFiles({ name }); createApplicationDialog = false"
+            @click="
+              recurseApplicationFiles({ name });
+              createApplicationDialog = false;
+            "
           >
             Finish
           </v-btn>
@@ -457,15 +498,6 @@
         <v-card-text class="pa-3 pt-0">
           <v-container>
             <v-row height="100%">
-              <v-col cols="12">
-                <v-text-field
-                  label="Name:"
-                  v-model="name"
-                  hint="Type the new DNA name here"
-                  persistent-hint
-                  dense
-                ></v-text-field>
-              </v-col>
               <v-col
                 v-for="(template, index) in dnaTemplates"
                 :key="index"
@@ -474,11 +506,7 @@
                 md="4"
                 lg="4"
               >
-                <dna-template
-                  :key="index"
-                  :template="template"
-                  :details="true"
-                >
+                <dna-template :key="index" :template="template" :details="true">
                 </dna-template>
               </v-col>
             </v-row>
@@ -487,6 +515,41 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="action darken-1" text @click="addDnaDialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="addWebPartDialog" persistent max-width="600px">
+      <v-card dark outlined>
+        <v-card-title>
+          Add a Layout
+        </v-card-title>
+        <v-card-text class="pa-3 pt-0">
+          <v-container>
+            <v-row height="100%">
+              <v-col
+                v-for="(template, index) in webPartTemplates"
+                :key="index"
+                cols="12"
+                sm="6"
+                md="4"
+                lg="4"
+              >
+                <web-part-template
+                  :key="index"
+                  :template="template"
+                  type="layouts"
+                  :details="true"
+                >
+                </web-part-template>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="action darken-1" text @click="addWebPartDialog = false">
             Close
           </v-btn>
         </v-card-actions>
@@ -502,7 +565,8 @@ export default {
     FileTree: () => import("../components/FileTree.vue"),
     Editor: () => import("../components/Editor.vue"),
     Message: () => import("../components/Message.vue"),
-    DnaTemplate: () => import("../components/DnaTemplate.vue")
+    DnaTemplate: () => import("../components/DnaTemplate.vue"),
+    WebPartTemplate: () => import("../components/WebPartTemplate.vue")
   },
   data() {
     return {
@@ -511,6 +575,7 @@ export default {
       stdMessagesDialog: false,
       createApplicationDialog: false,
       addDnaDialog: false,
+      addWebPartDialog: false,
       parentDir: "",
       name: "",
       terminalTab: 0
@@ -523,7 +588,8 @@ export default {
       "appServerMessages",
       "socketServerMessages",
       "showRefresh",
-      "dnaTemplates"
+      "dnaTemplates",
+      "webPartTemplates"
     ]),
     ...mapState("conductor", ["conductor", "applications"])
   },
@@ -537,6 +603,7 @@ export default {
       "serveWebApp",
       "socketServer",
       "getTemplates",
+      "getWebPartTemplates",
       "cloneSocket",
       "cloneDevConductor"
     ]),
