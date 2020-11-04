@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "hc-conductor": "vue-cli-service serve",
+    "crispr": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "socket": "nodemon socket.js --ignore './dev-apps/'"
   },
   "dependencies": {
     "@holochain/conductor-api": "^0.0.1-dev.9",

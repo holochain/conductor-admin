@@ -12,18 +12,42 @@
       dense
     >
       <template v-slot:prepend="{ item, open }">
-        <v-icon v-if="item.type === 'dir'" @click.stop="listDirectory(item); $emit('dir-selected', item)">
+        <v-icon
+          v-if="item.type === 'dir'"
+          @click.stop="
+            listDirectory(item);
+            $emit('dir-selected', item);
+          "
+        >
           {{ open ? "mdi-folder-open" : "mdi-folder" }}
         </v-icon>
-        <v-icon v-else>
+        <v-icon
+          v-else
+          @click="
+            openFile(item);
+            $emit('file-selected', item);
+          "
+        >
           {{ files[item.extension] }}
         </v-icon>
       </template>
       <template v-slot:label="{ item }">
-        <span v-if="item.type === 'dir'" @click.stop="listDirectory(item); $emit('dir-selected', item)">
+        <span
+          v-if="item.type === 'dir'"
+          @click.stop="
+            listDirectory(item);
+            $emit('dir-selected', item);
+          "
+        >
           {{ item.name }}
         </span>
-        <span v-else @click="$emit('file-selected', item)">
+        <span
+          v-else
+          @click="
+            openFile(item);
+            $emit('file-selected', item);
+          "
+        >
           {{ item.name }}
         </span>
       </template>
@@ -31,23 +55,26 @@
   </div>
 </template>
 <script>
+import { mapMutations } from "vuex";
 export default {
   name: "FileTree",
-  props: ["height"],
   components: {},
   data() {
     return {
       refreshTreeKey: 0,
-      codeWindowHeight: 200,
       open: [],
       active: [],
       initiallyOpen: ["Chat"],
       files: {
+        gitignore: "mdi-git",
+        editorconfig: "mdi-code-brackets",
+        browserslistrc: "mdi-format-list-checks",
         zip: "mdi-folder-zip-outline",
         rar: "mdi-folder-zip-outline",
         htm: "mdi-language-html5",
         html: "mdi-language-html5",
-        js: "mdi-nodejs",
+        js: "mdi-language-javascript",
+        ts: "mdi-language-typescript",
         json: "mdi-code-json",
         pdf: "mdi-file-pdf",
         png: "mdi-file-image",
@@ -64,8 +91,11 @@ export default {
         nix: "mdi-nix",
         rs: "mdi-code-braces",
         md: "mdi-language-markdown",
-        toml: "mdi-code-brackets",
-        vue: "mdi-vuetify"
+        yaml: "mdi-file-settings-outline",
+        toml: "mdi-file-settings",
+        vue: "mdi-vuetify",
+        lock: "mdi-file-lock-outline",
+        LICENSE: "mdi-license"
       },
       tree: [],
       items: []
@@ -73,31 +103,35 @@ export default {
   },
   computed: {},
   methods: {
-    setCodeWindowHeight() {
-      this.codeWindowHeight = this.$el.clientHeight - 106;
-    },
+    ...mapMutations("builder", ["openFile"]),
     createApplication() {
       console.log("createApplication");
     },
     async listDirectory(item) {
-      const parentDir = `${item.parentDir}${item.name}/`
-      console.log(parentDir);
-      const entries = await this.$store.state.db.files.where({ parentDir }).toArray();
-      item.children = entries.map(item => {
-        if (item.type === "dir") {
-          item.children = [];
-        }
-        return item;
-      });      
-      console.log(item);
-      this.refreshTreeKey++;
+      const parentDir = `${item.parentDir}${item.name}/`;
+      return new Promise(resolve => {
+        this.$store.state.db.files.where({ parentDir }).toArray(entries => {
+          item.children = entries.map(entry => {
+            if (entry.type === "dir") {
+              entry.children = [];
+            }
+            return entry;
+          });
+          resolve();
+        });
+      });
     }
   },
   mounted() {
-    this.setCodeWindowHeight();
-    this.$store.state.db.files.where({ parentDir: "/" }).toArray(items => {
-      console.log(items);
-      this.items = items;
+    this.$store.state.db.files.where({ parentDir: "/" }).toArray(entries => {
+      console.log(entries);
+      this.items = entries.map(entry => {
+        if (entry.type === "dir") {
+          entry.children = [];
+        }
+        return entry;
+      });
+      this.$emit('dir-selected', this.items[0]);
     });
   }
 };
